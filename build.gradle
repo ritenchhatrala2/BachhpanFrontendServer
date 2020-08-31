@@ -1,0 +1,129 @@
+plugins {
+    id 'org.springframework.boot' version '2.2.0.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id "org.openapi.generator" version "4.1.1"
+    id 'java'
+}
+
+group = 'BachhpanFrontendServer'
+version '0.1'
+sourceCompatibility = 1.8
+
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+
+ext {
+    swagger_annotations_version = "1.5.22"
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.0'
+    implementation 'io.jsonwebtoken:jjwt:0.9.0'
+    implementation 'org.apache.commons:commons-lang3:3.6'
+    implementation 'joda-time:joda-time:2.9.9'
+    implementation 'com.google.guava:guava:25.0-jre'
+
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor "io.swagger:swagger-annotations:$swagger_annotations_version"
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+
+/* Generate Server Code from OpenAPI definition */
+def studentApiYml = "$rootDir/src/main/resources/student-api.yaml".toString()
+
+/* server code configuration */
+task buildStudentStoreServerCode(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = "spring"
+    inputSpec = studentApiYml
+    outputDir = "$buildDir/generated".toString()
+
+    groupId = "$project.group".toString()
+    id = "$project.name-java-client".toString()
+    version = "$project.version".toString()
+    apiPackage = "com.bachhpan.frontend.api"
+    modelPackage = "com.bachhpan.frontend.model"
+    enablePostProcessFile = true
+    skipOverwrite = false
+    configOptions = [
+            configPackage       : "com.bachhpan.frontend.config",
+            java8               : "true",
+            dateLibrary         : "java8",
+            serializationLibrary: "jackson",
+            library             : "spring-boot",
+            useBeanValidation   : "true",
+            interfaceOnly       : "true",
+            serializableModel   : "true",
+            useTags             : "true"
+    ]
+}
+
+/* Generate Server Code from OpenAPI definition */
+def userAuthApiYml = "$rootDir/src/main/resources/user-auth-api.yaml".toString()
+
+/* server code configuration */
+task buildUserAuthServerCode(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = "spring"
+    inputSpec = userAuthApiYml
+    outputDir = "$buildDir/generated".toString()
+
+    groupId = "$project.group".toString()
+    id = "$project.name-java-client".toString()
+    version = "$project.version".toString()
+    apiPackage = "com.bachhpan.frontend.api"
+    modelPackage = "com.bachhpan.frontend.model"
+    importMappings = [
+            "User": "com.bachhpan.frontend.model.User"
+    ]
+    enablePostProcessFile = true
+    skipOverwrite = false
+    configOptions = [
+            configPackage       : "com.bachhpan.frontend.config",
+            java8               : "true",
+            dateLibrary         : "java8",
+            serializationLibrary: "jackson",
+            library             : "spring-boot",
+            useBeanValidation   : "true",
+            interfaceOnly       : "true",
+            serializableModel   : "true",
+            useTags             : "true"
+    ]
+}
+
+// attach the generated folder as source for this project
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/generated/src/main/java"
+        }
+    }
+}
+
+// code will be generated during compilation
+compileJava.dependsOn(buildStudentStoreServerCode, buildUserAuthServerCode)

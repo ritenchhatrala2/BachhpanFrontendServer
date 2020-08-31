@@ -1,0 +1,81 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger User Authentication zService
+  license:
+    name: MIT
+servers:
+  - url: '{protocol}:////localhost:8080/v1'
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: http
+paths:
+  /public/users/login:
+    get:
+      summary: login user
+      operationId: login
+      tags:
+        - userAuth
+      parameters:
+        - name: username
+          in: query
+          description: username customer
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: password for login
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A authentication token which can be used for subsequent api call.
+          content:
+            application/json:
+              schema:
+                type: string
+                nullable: true
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "./student-api.yaml#/components/schemas/Error"
+  /public/users/register:
+    get:
+      summary: Register User
+      operationId: register
+      tags:
+        - userAuth
+      parameters:
+        - name: username
+          in: query
+          description: username of customer
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: password for login
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A authentication token which can be used for subsequent api call.
+          content:
+            application/json:
+              schema:
+                type: string
+                nullable: true
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "./student-api.yaml#/components/schemas/Error"
